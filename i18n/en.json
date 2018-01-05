@@ -1,0 +1,9 @@
+{
+	"@metadata": {
+		"authors": [
+			"Ciencia Al Poder"
+		]
+	},
+	"stubuserwikiauth-desc": "Performs authentication for imported users against a remote wiki, providing the same user and password used on the remote wiki.",
+	"stubuserwikiauth-resetpass": "Account successfully activated. To increase the security of your account, you should use a different password for each site. It's highly recommended to set a different password here. You can skip it clicking on \"{{int:authprovider-resetpass-skip-label}}\" and set it later from your preferences."
+}

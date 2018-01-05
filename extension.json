@@ -1,0 +1,21 @@
+{
+	"name": "StubUserWikiAuth",
+	"version": "1.1.0",
+	"author": [
+		"Jesús Martínez (Ciencia Al Poder)"
+	],
+	"url": "https://github.com/ciencia/mediawiki-extensions-StubUserWikiAuth",
+	"descriptionmsg": "stubuserwikiauth-desc",
+	"license-name": "MIT",
+	"type": "other",
+	"MessagesDirs": {
+		"StubUserWikiAuth": [
+			"i18n"
+		]
+	},
+	"AutoloadClasses": {
+		"StubUserWikiAuth\\StubUserWikiPasswordAuthenticationProvider": "includes/StubUserWikiPasswordAuthenticationProvider.php",
+		"StubUserWikiAuth\\MWAuth": "includes/MWAuth.php"
+	},
+	"manifest_version": 1
+}

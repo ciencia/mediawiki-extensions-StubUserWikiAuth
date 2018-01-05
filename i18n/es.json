@@ -1,0 +1,9 @@
+{
+	"@metadata": {
+		"authors": [
+			"Ciencia Al Poder"
+		]
+	},
+	"stubuserwikiauth-desc": "Realiza autenticación de usuarios importados contra otro wiki, proporcionando el usuario y password del otro wiki.",
+	"stubuserwikiauth-resetpass": "La cuenta se ha activado correctamente. Para aumentar la seguridad de tu cuenta, deberías usar una contraseña diferente en cada sitio. Es altamente recomendable que cambies tu contraseña en este sitio. Puedes omitir este paso haciendo clic en \"{{int:authprovider-resetpass-skip-label}}\" y cambiarla más adelante desde tus preferencias."
+}
