@@ -33,7 +33,7 @@ $wgAuthManagerAutoConfig['primaryauth'][StubUserWikiAuth\StubUserWikiPasswordAut
 	'class' => StubUserWikiAuth\StubUserWikiPasswordAuthenticationProvider::class,
 	'args' => [ [
 		// URL to the remote api.php endpoint
-		'apiUrl' => 'https://www.mediawiki.org/w/api.php',',
+		'apiUrl' => 'https://www.mediawiki.org/w/api.php',
 		// URL to the Special:Preferences page (may be needed in some setups)
 		'prefsUrl' => 'https://www.mediawiki.org/wiki/Special:Preferences',
 		// Make this authentication not authoritative
