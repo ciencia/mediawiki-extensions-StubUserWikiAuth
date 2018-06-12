@@ -1,7 +1,7 @@
 {
   "@metadata": {
     "authors": [
-      "Ciencia Al Poder"
+      "XFusio"
     ]
   },
   "stubuserwikiauth-desc": "Réalise l'authentification d'utilisateurs importés depuis un autre wiki, en apportant le nom d'utilisateur et le mot de passe depuis cet autre wiki.",
