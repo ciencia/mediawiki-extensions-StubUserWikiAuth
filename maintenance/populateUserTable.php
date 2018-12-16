@@ -56,6 +56,10 @@ class PopulateUserTable extends Maintenance {
 			'archive' => [
 				'id' => 'ar_user',
 				'name' => 'ar_user_text'
+			],
+			'ipblocks' => [
+				'id' => 'ipb_by',
+				'name' => 'ipb_by_text'
 			]
 		];
 
@@ -77,7 +81,7 @@ class PopulateUserTable extends Maintenance {
 		parent::__construct();
 		$this->mDescription = 'Populates the user table creating stub users (user ID and name) from other tables.';
 		$this->addOption( 'db', 'Database name, if we don\'t want to write to $wgDBname', false /* required? */, true /* withArg */ );
-		$this->addOption( 'tables', 'Tables to grab users from (pipe separated list) revision, logging, image, oldimage, filearchive, archive', false, true );
+		$this->addOption( 'tables', 'Tables to grab users from (pipe separated list) revision, logging, image, oldimage, filearchive, archive, ipblocks', false, true );
 	}
 
 	public function execute() {
@@ -110,41 +114,50 @@ class PopulateUserTable extends Maintenance {
 		$userIDField = $columnInfo['id'];
 		$userNameField = $columnInfo['name'];
 
-		# FIXME: This should be done in batches to prevent reading millions of rows!
+		# Dummy values for all required fields
+		$e = [
+			'user_id' => '',
+			'user_name' => '',
+			'user_real_name' => '',
+			'user_password' => '',
+			'user_newpassword' => '',
+			'user_email' => '',
+			'user_touched' => '0',
+			'user_token' => ''
+		];
+
 		$this->output( "Populating users from table $table..." );
-		$result = $this->dbw->select(
-			[ $table, 'user' ],
-			[ $userIDField, $userNameField ],
-			[
-				'user_id' => null,
-				"$userIDField > 0"
-			],
-			__FUNCTION__,
-			[
-				'DISTINCT',
-				'ORDER BY' => $userIDField
-			],
-			[
-				'user' => [ 'LEFT JOIN', "user_id=$userIDField" ]
-			]
-		);
+
 		$count = 0;
-		if ( $result ) {
-			# Dummy values for all required fields
-			$e = [
-				'user_id' => '',
-				'user_name' => '',
-				'user_real_name' => '',
-				'user_password' => '',
-				'user_newpassword' => '',
-				'user_email' => '',
-				'user_touched' => '0',
-				'user_token' => ''
-			];
-			
+		$lastUserId = 0;
+
+		while ( true ) {
+			$result = $this->dbw->select(
+				[ $table, 'user' ],
+				[ $userIDField, $userNameField ],
+				[
+					'user_id' => null,
+					"$userIDField > $lastUserId"
+				],
+				__FUNCTION__,
+				[
+					'DISTINCT',
+					'ORDER BY' => $userIDField,
+					'LIMIT' => $this->mBatchSize,
+				],
+				[
+					'user' => [ 'LEFT JOIN', "user_id=$userIDField" ]
+				]
+			);
+
+			if ( !$result->numRows() ) {
+				break;
+			}
+
 			$row = $result->fetchRow();
 			while ( $row ) {
-				$e['user_id'] = $row[$userIDField];
+				$lastUserId = $row[$userIDField];
+				$e['user_id'] = $lastUserId;
 				$e['user_name'] = $row[$userNameField];
 				$inserted = $this->dbw->insert(
 					'user',
