@@ -1,0 +1,9 @@
+{
+  "@metadata": {
+    "authors": [
+      "XFusio"
+    ]
+  },
+  "stubuserwikiauth-desc": "Réalise l'authentification d'utilisateurs importés depuis un autre wiki, en apportant le nom d'utilisateur et le mot de passe depuis cet autre wiki.",
+  "stubuserwikiauth-resetpass": "Votre compte a bien été activé. Pour augmenter la sécurité de celui-ci, vous devriez utiliser un mot de passe différent pour chaque site. Il est fortement recommandé de définir un mot de passe différent ici. Vous pouvez passer cette étape en cliquant sur \"{{int:authprovider-resetpass-skip-label}}\" et le définir plus tard depuis vos préférences."
+}

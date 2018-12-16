@@ -12,13 +12,15 @@ After importing the dump, you should run the maintenance script located in the
 maintenance directory, to populate the user table with user names fetched from
 the page histories and logs.
 
-== Installation ==
+This extension was based on an early version of [MediaWikiAuth](https://www.mediawiki.org/wiki/Extension:MediaWikiAuth)
+
+## Installation
 
 Download and place in a folder called StubUserWikiAuth
 
 Add this to LocalSettings.php:
 
-```lang=php
+```php
 wfLoadExtension( 'StubUserWikiAuth' );
 ```
 
@@ -26,12 +28,12 @@ Then configure it at your will. The extension doesn't set up an authentication
 provider automatically, you should configure it yourself. In theory, it allows
 you to even provide more than one remote authentication provider.
 
-```
+```php
 $wgAuthManagerAutoConfig['primaryauth'][StubUserWikiAuth\StubUserWikiPasswordAuthenticationProvider::class] = [
 	'class' => StubUserWikiAuth\StubUserWikiPasswordAuthenticationProvider::class,
 	'args' => [ [
 		// URL to the remote api.php endpoint
-		'apiUrl' => 'https://www.mediawiki.org/w/api.php',',
+		'apiUrl' => 'https://www.mediawiki.org/w/api.php',
 		// URL to the Special:Preferences page (may be needed in some setups)
 		'prefsUrl' => 'https://www.mediawiki.org/wiki/Special:Preferences',
 		// Make this authentication not authoritative
@@ -49,3 +51,27 @@ $wgAuthManagerAutoConfig['primaryauth'][StubUserWikiAuth\StubUserWikiPasswordAut
 ];
 ```
 
+## Logging
+
+You can set up a log for diagnostic purposes, to see what external requests
+have been made. The logs don't contain private information like passwords,
+only the user name and if the login and import was successful, or if not what
+was the response from the remote api.
+
+Example:
+
+```php
+$wgDebugLogGroups['StubUserWikiAuth'] => '/var/log/mediawiki/StubUserWikiAuth_' . date('Ymd') . '.log';
+```
+
+## Features not supported
+
+ - It doesn't write any on-wiki log to see what users were successfully
+   logged-in and imported. You can, however, set up a log as described above.
+ - Also, there's no public flag or indication about a user being imported.
+   Nobody can know (unless looking at the database or server logs) if a user
+   was imported unless the user make edits on their account.
+ - It doesn't import the watchlist. Large watchlists may be problematic, and
+   it's easy for an user to edit his/her watchlist in raw on both wikis to
+   copy & paste it on the new wiki.
+ 
