@@ -77,9 +77,10 @@ class MWAuth {
 			$remoteReq->setData( $login_vars );
 			$remoteStatus = $remoteReq->execute();
 
-			if ( !$remoteStatus->isOK() ) {
-				wfDebugLog( 'StubUserWikiAuth', "Failed request for {$username}: Errors: " .
-					print_r( $remoteStatus->getErrors(), true ) . 
+			if ( !$remoteStatus->isOK() || $remoteReq->getStatus() != 200 ) {
+				wfDebugLog( 'StubUserWikiAuth', "Failed request for {$username}: " .
+					"Status: " . $remoteReq->getStatus() .
+					". Errors: " . print_r( $remoteStatus->getErrors(), true ) .
 					". Content: " . $remoteReq->getContent() );
 				return StatusValue::newFatal( wfMessage( 'unknown-error' ) );
 			}
@@ -145,6 +146,12 @@ class MWAuth {
 				}
 			}
 		} while ( isset( $results['login'] ) && $login['result'] == 'NeedToken' );
+
+		wfDebugLog( 'StubUserWikiAuth', "Failed request for {$username}: No login object found. Is the remote wiki api URL correct?" );
+
+		return StatusValue::newFatal(
+			wfMessage( 'unknown-error' )
+		);
 	}
 
 	public function logout() {
