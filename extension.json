@@ -1,12 +1,12 @@
 {
 	"name": "StubUserWikiAuth",
-	"version": "1.1.0",
+	"version": "1.1.1",
 	"author": [
 		"Jesús Martínez (Ciencia Al Poder)"
 	],
-	"url": "https://github.com/ciencia/mediawiki-extensions-StubUserWikiAuth",
+	"url": "https://www.mediawiki.org/wiki/Extension:StubUserWikiAuth",
 	"descriptionmsg": "stubuserwikiauth-desc",
-	"license-name": "MIT",
+	"license-name": "GPL-2.0-or-later",
 	"type": "other",
 	"MessagesDirs": {
 		"StubUserWikiAuth": [
