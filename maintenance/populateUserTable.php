@@ -60,6 +60,10 @@ class PopulateUserTable extends Maintenance {
 			'ipblocks' => [
 				'id' => 'ipb_by',
 				'name' => 'ipb_by_text'
+			],
+			'actor' => [
+				'id' => 'actor_user',
+				'name' => 'actor_name'
 			]
 		];
 
@@ -81,30 +85,51 @@ class PopulateUserTable extends Maintenance {
 		parent::__construct();
 		$this->mDescription = 'Populates the user table creating stub users (user ID and name) from other tables.';
 		$this->addOption( 'db', 'Database name, if we don\'t want to write to $wgDBname', false /* required? */, true /* withArg */ );
-		$this->addOption( 'tables', 'Tables to grab users from (pipe separated list) revision, logging, image, oldimage, filearchive, archive, ipblocks', false, true );
+		$this->addOption( 'tables', 'Tables to grab users from (pipe separated list) revision, logging, image, oldimage, filearchive, archive, ipblocks, actor', false, true );
 	}
 
 	public function execute() {
-		global $wgDBname;
+		global $wgDBname, $wgActorTableSchemaMigrationStage;
 
 		# Get a single DB_MASTER connection
 		$this->dbw = wfGetDB( DB_MASTER, [], $this->getOption( 'db', $wgDBname ) );
 
-		$tables = $this->getOption( 'tables' );
-		if ( !is_null( $tables ) ) {
-			$this->tables = explode( '|', $tables );
+		$useActorTable = false;
 
-			# Check that no invalid tables were provided
-			$invalidTables = array_diff( $this->tables, array_keys( $this->validTables ) );
-			if ( count( $invalidTables ) > 0 ) {
-				$this->error( sprintf( 'Invalid tables provided: %s',
-					implode( ',', $invalidTables ) ), 1 );
+		if ( defined( 'SCHEMA_COMPAT_OLD' ) ) {
+			// MediaWiki 1.32+
+			if ( ( $wgActorTableSchemaMigrationStage | SCHEMA_COMPAT_OLD ) != SCHEMA_COMPAT_OLD ) {
+				$useActorTable = true;
 			}
-		} else {
-			$this->tables = array_keys( $this->validTables );
+		} elseif ( defined( 'MIGRATION_OLD' ) && ( $wgActorTableSchemaMigrationStage | MIGRATION_OLD ) != MIGRATION_OLD ) {
+			// MediaWiki 1.31
+			$useActorTable = true;
 		}
-		
-		foreach( $this->tables as $table ) {
+
+		$tables = $this->getOption( 'tables' );
+		if ( $useActorTable ) {
+			# If the schema migration is set to use the actor table, only use the actor table
+			if ( !is_null( $tables ) ) {
+				$this->error( 'The "tables" parameter can\'t be provided when the actor table is being used.', 1 );
+			}
+			$this->tables = [ 'actor' ];
+		} else {
+			unset( $this->validTables['actor'] );
+
+			if ( !is_null( $tables ) ) {
+				$this->tables = explode( '|', $tables );
+
+				# Check that no invalid tables were provided
+				$invalidTables = array_diff( $this->tables, array_keys( $this->validTables ) );
+				if ( count( $invalidTables ) > 0 ) {
+					$this->error( sprintf( 'Invalid tables provided: %s',
+						implode( ',', $invalidTables ) ), 1 );
+				}
+			} else {
+				$this->tables = array_keys( $this->validTables );
+			}
+		}
+		foreach ( $this->tables as $table ) {
 			$this->populateUsersFromTable( $table );
 		}
 	}
