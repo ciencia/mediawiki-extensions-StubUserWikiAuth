@@ -64,6 +64,21 @@ Example:
 $wgDebugLogGroups['StubUserWikiAuth'] => '/var/log/mediawiki/StubUserWikiAuth_' . date('Ymd') . '.log';
 ```
 
+## Upgrading
+
+Since May 2019, a bug was fixed on the maintenance script that was inserting
+rows on the `user` table with `user_timestamp` set to `'0'`. This can cause
+problems on recent versions of MediaWiki. If you ran the maintenance script
+before that date, you probably want to manually update the `user` table for
+those rows created with a bad timestamp, for example:
+
+```sql
+update user set user_touched = '20170729092529' where user_touched < '1';
+```
+
+The `user` table may have a different name depending if you have configured a
+table prefix.
+
 ## Features not supported
 
  - It doesn't write any on-wiki log to see what users were successfully

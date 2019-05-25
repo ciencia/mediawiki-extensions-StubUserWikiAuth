@@ -7,8 +7,8 @@
  * @file
  * @ingroup Maintenance
  * @author Jesús Martínez <martineznovo@gmail.com>
- * @version 1.0
- * @date 20 July 2017
+ * @version 1.0.1
+ * @date 2 April 2019
  */
 
 /**
@@ -122,7 +122,7 @@ class PopulateUserTable extends Maintenance {
 			'user_password' => '',
 			'user_newpassword' => '',
 			'user_email' => '',
-			'user_touched' => '0',
+			'user_touched' => wfTimestampNow(),
 			'user_token' => ''
 		];
 
