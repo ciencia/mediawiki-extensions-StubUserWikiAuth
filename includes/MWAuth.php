@@ -72,10 +72,29 @@ class MWAuth {
 			'lgpassword' => $password,
 			'format' => 'json'
 		];
+		$requestCount = 0;
 		$remoteReq = MWHttpRequest::factory( $this->apiUrl, $remoteReqOptions, __METHOD__ );
 		do {
+
+			# Prevent infinite loops
+			if ( $requestCount > 3 ) {
+				wfDebugLog( 'StubUserWikiAuth', "Too many requests logging in for {$username}: " );
+				return StatusValue::newFatal( wfMessage( 'unknown-error' ) );
+			}
+
+			# BEGIN HACK: MWHttpRequest is broken on 1.34. It doesn't send the
+			# cookies to the final request if set with the CookieJar
+			# Send them manually as a standalone header
+			$plainCookies = $this->GetCookies();
+			# Clear cookies as we send them manually
+			$remoteReq->setCookieJar( new \CookieJar() );
+			if ( $plainCookies ) {
+				$remoteReq->setHeader( 'Cookie', $plainCookies );
+			}
+			# END Hack
 			$remoteReq->setData( $login_vars );
 			$remoteStatus = $remoteReq->execute();
+			$requestCount++;
 
 			if ( !$remoteStatus->isOK() || $remoteReq->getStatus() != 200 ) {
 				wfDebugLog( 'StubUserWikiAuth', "Failed request for {$username}: " .
@@ -194,7 +213,12 @@ class MWAuth {
 			'timeout' => $this->timeout
 		];
 		$remoteReq = MWHttpRequest::factory( $this->apiUrl, $remoteReqOptions, __METHOD__ );
-		$remoteReq->setCookieJar( $this->cookieJar );
+		#$remoteReq->setCookieJar( $this->cookieJar );
+		# BEGIN HACK: MWHttpRequest is broken on 1.34. It doesn't send the
+		# cookies to the final request if set with the CookieJar
+		# Send them manually as a standalone header
+		$remoteReq->setHeader( 'Cookie', $this->GetCookies() );
+		# END Hack
 		$remoteReq->setData( $prefs_vars );
 		$remoteStatus = $remoteReq->execute();
 
@@ -258,5 +282,17 @@ class MWAuth {
 			$email = stripslashes( html_entity_decode( $matches[2], ENT_QUOTES, 'UTF-8' ) );
 		}
 	}
-}	
 
+	private function GetCookies() {
+		# HACK: MWHttpRequest is broken on 1.34. It doesn't send the
+		# cookies to the final request if set with the CookieJar
+		# Send them manually as a standalone header
+		$parsedUrl = wfParseUrl( $this->apiUrl );
+		$path = $parsedUrl['path'];
+		$host = $parsedUrl['host'];
+		if ( $this->cookieJar !== null ) {
+			return $this->cookieJar->serializeToHttpRequest( $path, $host );
+		}
+		return null;
+	}
+}
