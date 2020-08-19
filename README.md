@@ -40,10 +40,10 @@ $wgAuthManagerAutoConfig['primaryauth'][StubUserWikiAuth\StubUserWikiPasswordAut
 		'authoritative' => false,
 		// Prompt the user to change their password on first successful login
 		// The user can skip it, however. (default: true)
-		'promptPasswordChange' => true
+		'promptPasswordChange' => true,
 		// Fetch user preferences from the remote wiki. (default:false)
 		// You can set it to an array of preferences that *won't* be imported
-		'fetchUserOptions' => true
+		'fetchUserOptions' => true,
 	] ],
 	// Weight of this authentication provider against others
 	// 10 should be fine
@@ -81,12 +81,12 @@ table prefix.
 
 ## Features not supported
 
- - It doesn't write any on-wiki log to see what users were successfully
+ - It doesn't write any on-wiki log to see which users were successfully
    logged-in and imported. You can, however, set up a log as described above.
  - Also, there's no public flag or indication about a user being imported.
    Nobody can know (unless looking at the database or server logs) if a user
-   was imported unless the user make edits on their account.
+   was imported unless the user make edits under their account.
  - It doesn't import the watchlist. Large watchlists may be problematic, and
-   it's easy for an user to edit his/her watchlist in raw on both wikis to
+   it's easy for a user to edit his/her watchlist in raw on both wikis to
    copy & paste it on the new wiki.
- 
+

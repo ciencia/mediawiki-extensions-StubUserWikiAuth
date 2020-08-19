@@ -7,8 +7,8 @@
  * @file
  * @ingroup Maintenance
  * @author Jesús Martínez <martineznovo@gmail.com>
- * @version 1.0.1
- * @date 2 April 2019
+ * @version 1.2.0
+ * @date 19 August 2020
  */
 
 /**
@@ -96,7 +96,10 @@ class PopulateUserTable extends Maintenance {
 
 		$useActorTable = false;
 
-		if ( defined( 'SCHEMA_COMPAT_OLD' ) ) {
+		if ( class_exists( 'ActorMigration' ) && !isset( $wgActorTableSchemaMigrationStage ) ) {
+			// MediaWiki 1.34+
+			$useActorTable = true;
+		} elseif ( defined( 'SCHEMA_COMPAT_OLD' ) ) {
 			// MediaWiki 1.32+
 			if ( ( $wgActorTableSchemaMigrationStage | SCHEMA_COMPAT_OLD ) != SCHEMA_COMPAT_OLD ) {
 				$useActorTable = true;
