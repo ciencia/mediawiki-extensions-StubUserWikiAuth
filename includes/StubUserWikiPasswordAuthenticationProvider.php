@@ -30,6 +30,7 @@ use DBAccessObjectUtils;
 use MediaWiki\Auth\AuthenticationRequest;
 use MediaWiki\Auth\AuthenticationResponse;
 use MediaWiki\Auth\PasswordAuthenticationRequest;
+use Mediawiki\MediaWikiServices;
 
 /**
  * A primary authentication provider for stub users that authenticates against
@@ -101,7 +102,8 @@ class StubUserWikiPasswordAuthenticationProvider
 			return AuthenticationResponse::newAbstain();
 		}
 
-		$username = User::getCanonicalName( $req->username, 'usable' );
+
+		$username = $this->getCanonicalUsername( $req->username );
 		if ( $username === false ) {
 			return AuthenticationResponse::newAbstain();
 		}
@@ -193,7 +195,8 @@ class StubUserWikiPasswordAuthenticationProvider
 	}
 
 	public function testUserCanAuthenticate( $username ) {
-		$username = User::getCanonicalName( $username, 'usable' );
+		$username = $this->getCanonicalUsername($username);
+
 		if ( $username === false ) {
 			return false;
 		}
@@ -213,7 +216,7 @@ class StubUserWikiPasswordAuthenticationProvider
 	}
 
 	public function testUserExists( $username, $flags = User::READ_NORMAL ) {
-		$username = User::getCanonicalName( $username, 'usable' );
+		$username = $this->getCanonicalUsername($username);
 		if ( $username === false ) {
 			return false;
 		}
@@ -252,6 +255,13 @@ class StubUserWikiPasswordAuthenticationProvider
 
 	public function finishAccountCreation( $user, $creator, AuthenticationResponse $res ) {
 		return null;
+	}
+
+	private function getCanonicalUserName( $username ) {
+		$services = MediaWikiServices::getInstance();
+		$userNameUtils = $services->getUsernameUtils();
+
+		return $userNameUtils->getCanonical( $username, 'usable' );
 	}
 }
 
