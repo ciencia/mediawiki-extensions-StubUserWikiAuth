@@ -173,9 +173,11 @@ class StubUserWikiPasswordAuthenticationProvider
 			if ( is_array( $this->fetchUserOptions ) ) {
 				$prefs = array_diff( $prefs, $this->fetchUserOptions );
 			}
+			$userOptionsManager = MediaWikiServices::getInstance()->getUserOptionsManager();
 			foreach ( $prefs as $name => $val ) {
-				$user->setOption( $name, $val );
+				$userOptionsManager->setOption( $user, $name, $val );
 			}
+			$userOptionsManager->saveOptions( $user );
 		}
 		
 		$user->saveSettings();
