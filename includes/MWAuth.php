@@ -17,10 +17,11 @@
  */
 
 namespace StubUserWikiAuth;
-use MWHttpRequest;
-use StatusValue;
-use FormatJson;
+
 use Exception;
+use FormatJson;
+use MediaWiki\MediaWikiServices;
+use StatusValue;
 
  /**
  * Logic for logging in to remote wiki and fetching various data from the user
@@ -73,7 +74,7 @@ class MWAuth {
 			'format' => 'json'
 		];
 		$requestCount = 0;
-		$remoteReq = MWHttpRequest::factory( $this->apiUrl, $remoteReqOptions, __METHOD__ );
+		$remoteReq = $this->createRequest( $this->apiUrl, $remoteReqOptions, __METHOD__ );
 		do {
 
 			# Prevent infinite loops
@@ -82,16 +83,6 @@ class MWAuth {
 				return StatusValue::newFatal( wfMessage( 'unknown-error' ) );
 			}
 
-			# BEGIN HACK: MWHttpRequest is broken on 1.34. It doesn't send the
-			# cookies to the final request if set with the CookieJar
-			# Send them manually as a standalone header
-			$plainCookies = $this->GetCookies();
-			# Clear cookies as we send them manually
-			$remoteReq->setCookieJar( new \CookieJar() );
-			if ( $plainCookies ) {
-				$remoteReq->setHeader( 'Cookie', $plainCookies );
-			}
-			# END Hack
 			$remoteReq->setData( $login_vars );
 			$remoteStatus = $remoteReq->execute();
 			$requestCount++;
@@ -181,7 +172,7 @@ class MWAuth {
 			'timeout' => $this->timeout
 		];
 		$logout_vars = [ 'action' => 'logout', 'format' => 'json' ];
-		$remoteReq = MWHttpRequest::factory( $this->apiUrl, $remoteReqOptions, __METHOD__ );
+		$remoteReq = $this->createRequest( $this->apiUrl, $remoteReqOptions, __METHOD__ );
 		$remoteReq->setCookieJar( $this->cookieJar );
 		$remoteReq->setData( $logout_vars );
 		$remoteReq->execute();
@@ -212,13 +203,8 @@ class MWAuth {
 			'userAgent' => 'Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; Trident/5.0)',
 			'timeout' => $this->timeout
 		];
-		$remoteReq = MWHttpRequest::factory( $this->apiUrl, $remoteReqOptions, __METHOD__ );
-		#$remoteReq->setCookieJar( $this->cookieJar );
-		# BEGIN HACK: MWHttpRequest is broken on 1.34. It doesn't send the
-		# cookies to the final request if set with the CookieJar
-		# Send them manually as a standalone header
-		$remoteReq->setHeader( 'Cookie', $this->GetCookies() );
-		# END Hack
+		$remoteReq = $this->createRequest( $this->apiUrl, $remoteReqOptions, __METHOD__ );
+		$remoteReq->setCookieJar( $this->cookieJar );
 		$remoteReq->setData( $prefs_vars );
 		$remoteStatus = $remoteReq->execute();
 
@@ -260,7 +246,7 @@ class MWAuth {
 			'userAgent' => 'Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; Trident/5.0)',
 			'timeout' => $this->timeout
 		];
-		$remoteReq = MWHttpRequest::factory( wfAppendQuery( $this->prefsUrl, 'uselang=qqx' ),
+		$remoteReq = $this->createRequest( wfAppendQuery( $this->prefsUrl, 'uselang=qqx' ),
 			$remoteReqOptions, __METHOD__ );
 		$remoteReq->setCookieJar( $this->cookieJar );
 		$remoteStatus = $remoteReq->execute();
@@ -283,16 +269,7 @@ class MWAuth {
 		}
 	}
 
-	private function GetCookies() {
-		# HACK: MWHttpRequest is broken on 1.34. It doesn't send the
-		# cookies to the final request if set with the CookieJar
-		# Send them manually as a standalone header
-		$parsedUrl = wfParseUrl( $this->apiUrl );
-		$path = $parsedUrl['path'];
-		$host = $parsedUrl['host'];
-		if ( $this->cookieJar !== null ) {
-			return $this->cookieJar->serializeToHttpRequest( $path, $host );
-		}
-		return null;
+	private function createRequest( $url, array $options = [], $caller = __METHOD__ ) {
+		return MediaWikiServices::getInstance()->getHttpRequestFactory()->create( $url, $options, $caller );
 	}
 }
