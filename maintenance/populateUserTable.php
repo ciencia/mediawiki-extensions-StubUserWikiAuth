@@ -91,8 +91,8 @@ class PopulateUserTable extends Maintenance {
 	public function execute() {
 		global $wgDBname, $wgActorTableSchemaMigrationStage;
 
-		# Get a single DB_MASTER connection
-		$this->dbw = wfGetDB( DB_MASTER, [], $this->getOption( 'db', $wgDBname ) );
+		# Get a single DB_PRIMARY connection
+		$this->dbw = wfGetDB( DB_PRIMARY, [], $this->getOption( 'db', $wgDBname ) );
 
 		$useActorTable = false;
 
