@@ -31,6 +31,7 @@ use MediaWiki\Auth\AuthenticationRequest;
 use MediaWiki\Auth\AuthenticationResponse;
 use MediaWiki\Auth\PasswordAuthenticationRequest;
 use Mediawiki\MediaWikiServices;
+use Wikimedia\Rdbms\ILoadBalancer;
 
 /**
  * A primary authentication provider for stub users that authenticates against
@@ -45,7 +46,6 @@ class StubUserWikiPasswordAuthenticationProvider
 
 	protected $apiUrl = false;
 	protected $prefsUrl = false;
-	//protected $fetchWatchlist = false;
 	protected $timeout = 10;
 	protected $fetchUserOptions = false;
 	protected $promptPasswordChange = true;
@@ -113,7 +113,8 @@ class StubUserWikiPasswordAuthenticationProvider
 			'user_id', 'user_password', 'user_password_expires',
 		];
 
-		$dbr = wfGetDB( DB_REPLICA );
+		$loadBalancer = MediaWikiServices::getInstance()->getDBLoadBalancer();
+		$dbr = $loadBalancer->getConnectionRef( DB_REPLICA );
 		$row = $dbr->selectRow(
 			'user',
 			$fields,
@@ -140,7 +141,7 @@ class StubUserWikiPasswordAuthenticationProvider
 		# Populate our password
 		$newHash = $this->getPasswordFactory()->newFromPlaintext( $req->password );
 
-		$dbw = wfGetDB( DB_MASTER );
+		$dbw = $loadBalancer->getConnectionRef( DB_PRIMARY );
 		$dbw->update(
 			'user',
 			[ 'user_password' => $newHash->toString() ],
@@ -203,7 +204,7 @@ class StubUserWikiPasswordAuthenticationProvider
 			return false;
 		}
 
-		$dbr = wfGetDB( DB_REPLICA );
+		$dbr = MediaWikiServices::getInstance()->getDBLoadBalancer()->getConnectionRef( DB_REPLICA );
 		$row = $dbr->selectRow(
 			'user',
 			[ 'user_password' ],
@@ -224,9 +225,9 @@ class StubUserWikiPasswordAuthenticationProvider
 		}
 
 		list( $db, $options ) = DBAccessObjectUtils::getDBOptions( $flags );
-		return (bool)wfGetDB( $db )->selectField(
+		return (bool)MediaWikiServices::getInstance()->getDBLoadBalancer()->getConnectionRef( $db )->selectField(
 			[ 'user' ],
-			[ 'user_id' ],
+			'user_id',
 			[ 'user_name' => $username ],
 			__METHOD__,
 			$options
