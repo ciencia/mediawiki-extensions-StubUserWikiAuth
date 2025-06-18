@@ -114,7 +114,7 @@ class StubUserWikiPasswordAuthenticationProvider
 		];
 
 		$loadBalancer = MediaWikiServices::getInstance()->getDBLoadBalancer();
-		$dbr = $loadBalancer->getConnectionRef( DB_REPLICA );
+		$dbr = $loadBalancer->getConnection( DB_REPLICA );
 		$row = $dbr->selectRow(
 			'user',
 			$fields,
@@ -141,7 +141,7 @@ class StubUserWikiPasswordAuthenticationProvider
 		# Populate our password
 		$newHash = $this->getPasswordFactory()->newFromPlaintext( $req->password );
 
-		$dbw = $loadBalancer->getConnectionRef( DB_PRIMARY );
+		$dbw = $loadBalancer->getConnection( DB_PRIMARY );
 		$dbw->update(
 			'user',
 			[ 'user_password' => $newHash->toString() ],
@@ -204,7 +204,7 @@ class StubUserWikiPasswordAuthenticationProvider
 			return false;
 		}
 
-		$dbr = MediaWikiServices::getInstance()->getDBLoadBalancer()->getConnectionRef( DB_REPLICA );
+		$dbr = MediaWikiServices::getInstance()->getDBLoadBalancer()->getConnection( DB_REPLICA );
 		$row = $dbr->selectRow(
 			'user',
 			[ 'user_password' ],
@@ -225,7 +225,7 @@ class StubUserWikiPasswordAuthenticationProvider
 		}
 
 		list( $db, $options ) = DBAccessObjectUtils::getDBOptions( $flags );
-		return (bool)MediaWikiServices::getInstance()->getDBLoadBalancer()->getConnectionRef( $db )->selectField(
+		return (bool)MediaWikiServices::getInstance()->getDBLoadBalancer()->getConnection( $db )->selectField(
 			[ 'user' ],
 			'user_id',
 			[ 'user_name' => $username ],
